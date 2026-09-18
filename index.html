@@ -37,14 +37,14 @@ h1,h2,h3{font-family:Georgia,serif;font-weight:500;letter-spacing:-1.5px} h1{fon
 
 <style>
 .maphero{display:grid;grid-template-columns:40% 60%;min-height:650px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -28px 65px;background:var(--cream);overflow:hidden}.mapcopy{padding:78px 52px 70px;display:flex;flex-direction:column;justify-content:center}.mapcopy h1{font-size:clamp(54px,6.6vw,86px);line-height:.92}.mapbox{min-height:650px;position:relative;padding:28px 28px 28px 0;display:flex;align-items:center}.europe-map-frame{position:relative;width:100%;aspect-ratio:960/830;border-radius:34px;overflow:hidden;background:#d8edf0;box-shadow:0 22px 55px rgba(23,53,45,.14);border:1px solid rgba(23,53,45,.08)}.europe-map-image{display:block;width:100%;height:100%;object-fit:contain}.maplabel{position:absolute;z-index:20;top:48px;left:24px;background:#fffdf8ee;border:1px solid var(--line);padding:10px 14px;border-radius:999px;font-size:12px;box-shadow:0 8px 24px rgba(23,53,45,.08)}.map-pin-link{position:absolute;z-index:30;transform:translate(-50%,-50%);display:block;width:24px;height:24px;border:0;background:transparent;border-radius:50%;padding:0}.map-pin-link::before{content:'';position:absolute;inset:5px;border-radius:50%;background:var(--ink);border:3px solid #fff;box-shadow:0 4px 12px rgba(23,53,45,.24);transition:transform .18s ease,box-shadow .18s ease}.map-pin-link::after{content:'';position:absolute;inset:0;border:1px solid rgba(23,53,45,.25);border-radius:50%;opacity:.7}.map-pin-link:hover::before,.map-pin-link:focus-visible::before{transform:scale(1.18);box-shadow:0 7px 18px rgba(23,53,45,.28)}.map-pin-link:focus-visible{outline:2px solid var(--ink);outline-offset:3px}.map-note{position:absolute;left:24px;bottom:22px;z-index:20;background:#fffdf8ee;border:1px solid var(--line);border-radius:16px;padding:11px 14px;font-size:11px;color:var(--muted);box-shadow:0 8px 22px rgba(23,53,45,.08)}.placegrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.placecard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px}.placecard .type{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}.placecard h3{font-size:25px;margin:8px 0}.placecard p{color:#66716b;line-height:1.45;margin:0 0 13px}.meta{display:flex;flex-wrap:wrap;gap:7px}.meta span{background:var(--sage);border-radius:999px;padding:6px 9px;font-size:11px}@media(max-width:850px){.maphero{grid-template-columns:1fr;margin:0 -16px 45px;min-height:0}.mapcopy{padding:45px 24px 30px}.mapbox{padding:0 16px 24px;min-height:0}.europe-map-frame{aspect-ratio:960/830;border-radius:24px}.maplabel{top:18px;left:18px}.map-note{left:18px;bottom:14px}.map-pin-link{width:20px;height:20px}.placegrid{grid-template-columns:1fr}}
-</style></head>
+.profile-kicker{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px}.profile-subtitle{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:24px 0 10px}.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.field input,.plan-note{width:100%;padding:13px;border:1px solid var(--line);border-radius:13px;background:white;color:var(--ink)}.plan-note{min-height:88px;resize:vertical;font:inherit}.profile-result{display:flex;justify-content:space-between;gap:20px;align-items:start}.profile-chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end}.profile-chips span,.route-tag{background:var(--sage);border-radius:999px;padding:7px 10px;font-size:11px}.nearby-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.nearby-actions a{text-decoration:none;display:inline-flex;align-items:center}.nearby-actions .locate{margin-top:0}@media(max-width:850px){.time-grid{grid-template-columns:1fr 1fr}.profile-result{flex-direction:column}.profile-chips{justify-content:flex-start}}@media(max-width:520px){.time-grid{grid-template-columns:1fr}}</style></head>
 <body><div id="app"></div>
 <script>
 const COUNTRIES = {"España": ["Madrid", "Barcelona", "Sevilla", "Granada", "San Sebastián", "Mallorca", "Ibiza", "Tenerife"], "Portugal": ["Lisboa", "Oporto", "Sintra", "Algarve", "Madeira", "Azores"], "Francia": ["París", "Niza", "Provenza", "Lyon", "Burdeos", "Estrasburgo", "Córcega"], "Italia": ["Roma", "Venecia", "Florencia", "Positano", "Capri", "Milán", "Lago di Como", "Cinque Terre", "Puglia", "Sicilia", "Cerdeña", "Dolomitas"], "Grecia": ["Atenas", "Santorini", "Mykonos", "Creta", "Corfú", "Rodas", "Milos"], "Reino Unido": ["Londres", "Edimburgo", "Bath", "York", "Cotswolds", "Isla de Skye"], "Irlanda": ["Dublín", "Galway", "Cork", "Killarney", "Acantilados de Moher"], "Islandia": ["Reikiavik", "Círculo Dorado", "Costa Sur", "Vík", "Akureyri"], "Noruega": ["Oslo", "Bergen", "Geiranger", "Lofoten", "Tromsø"], "Suecia": ["Estocolmo", "Gotemburgo", "Malmö", "Laponia sueca"], "Finlandia": ["Helsinki", "Rovaniemi", "Laponia", "Turku"], "Dinamarca": ["Copenhague", "Aarhus", "Odense"], "Países Bajos": ["Ámsterdam", "Róterdam", "Utrecht", "La Haya", "Giethoorn"], "Bélgica": ["Bruselas", "Brujas", "Gante", "Amberes"], "Luxemburgo": ["Luxemburgo", "Vianden"], "Alemania": ["Berlín", "Múnich", "Hamburgo", "Colonia", "Dresde", "Selva Negra"], "Suiza": ["Zúrich", "Lucerna", "Interlaken", "Zermatt", "Berna", "Lauterbrunnen"], "Austria": ["Viena", "Salzburgo", "Innsbruck", "Hallstatt"], "Chequia": ["Praga", "Český Krumlov", "Brno"], "Polonia": ["Cracovia", "Varsovia", "Gdansk", "Wroclaw", "Zakopane"], "Hungría": ["Budapest", "Lago Balaton"], "Eslovaquia": ["Bratislava", "Altos Tatras"], "Eslovenia": ["Liubliana", "Lago Bled", "Piran", "Valle del Soča"], "Croacia": ["Dubrovnik", "Split", "Hvar", "Zadar", "Rovinj", "Plitvice"], "Montenegro": ["Kotor", "Budva", "Durmitor"], "Serbia": ["Belgrado", "Novi Sad"], "Rumanía": ["Bucarest", "Brașov", "Sibiu", "Transilvania"], "Bulgaria": ["Sofía", "Plovdiv", "Nessebar", "Rila"], "Albania": ["Tirana", "Berat", "Gjirokastër", "Riviera Albanesa"], "Bosnia y Herzegovina": ["Sarajevo", "Mostar"], "Macedonia del Norte": ["Skopie", "Ohrid"], "Estonia": ["Tallin", "Tartu", "Saaremaa"], "Letonia": ["Riga", "Jūrmala"], "Lituania": ["Vilna", "Kaunas", "Curonian Spit"], "Malta": ["La Valeta", "Mdina", "Gozo", "Comino"], "Chipre": ["Nicosia", "Pafos", "Limassol", "Ayia Napa"], "Mónaco": ["Montecarlo", "Monaco-Ville"], "San Marino": ["San Marino"], "Turquía": ["Estambul", "Capadocia", "Antalya", "Éfeso", "Bodrum"], "Ucrania": ["Kyiv", "Leópolis", "Odesa"], "Andorra": ["Andorra la Vella", "Grandvalira"], "Liechtenstein": ["Vaduz", "Malbun"]};
 const SPECIAL = {"Positano": [["Paseo por el centro y vistas", "09:30", "Explora las callejuelas, miradores y rincones del centro."], ["Almuerzo italiano", "13:30", "Una pausa gastronómica para probar cocina local."], ["Playa y costa", "17:00", "Tarde para disfrutar del paisaje costero y el ambiente del destino."], ["Atardecer + cena", "20:30", "Cierra el día con vistas y una cena tranquila."]], "Roma": [["Centro histórico", "09:30", "Plazas, fuentes y grandes monumentos en un paseo compacto."], ["Pasta italiana", "13:30", "Comida local en el centro."], ["Barrio con ambiente", "17:00", "Tarde de paseo y cafés."], ["Cena romana", "20:30", "Cena y paseo nocturno."]], "París": [["Barrio emblemático", "09:30", "Paseo por una zona con arquitectura y ambiente."], ["Bistró francés", "13:30", "Comida francesa."], ["Museo o paseo", "17:00", "Tarde cultural o relajada."], ["Cena + luces", "20:30", "París al anochecer."]], "Barcelona": [["Casco histórico", "09:30", "Paseo por calles y plazas emblemáticas."], ["Tapas", "13:30", "Comida local."], ["Arquitectura y mar", "17:00", "Combina cultura y costa."], ["Cena mediterránea", "20:30", "Cena y paseo nocturno."]]};
 const moods=["Romántico","Playa","Gastronomía","Aventura","Sin prisas","Cultura"];
 const interests=["Playa","Barco","Gastronomía","Cultura","Naturaleza","Atardecer"];
-let state={country:null,destination:null,mood:"Sin prisas",days:3,pace:"Equilibrado",company:"Pareja",budget:"Medio",needs:"Sin restricciones",interests:["Gastronomía","Atardecer"]};
+let state={country:null,destination:null,mood:"Sin prisas",days:3,pace:"Equilibrado",company:"Pareja",budget:"Medio",needs:"Sin restricciones",interests:["Gastronomía","Atardecer"],startTime:"09:00",endTime:"21:30",lunchTime:"14:00",dinnerTime:"20:30",planNote:""};
 
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function shell(content){
@@ -104,15 +104,25 @@ let expHTML=exps.map(e=>`<article class="exp"><small>${e[1]}</small><h3>${esc(e[
 shell(`<div class="back"><button onclick='country(${JSON.stringify(state.country)})'>← Volver a ${esc(state.country)}</button></div>
 <section class="destination-hero"><div class="eyebrow">Tu destino · ${esc(state.country)}</div><h1>${esc(d)},<br>a tu manera.</h1><p>Dime cómo quieres vivirlo y adapta la ruta a tus días, ritmo, compañía, presupuesto e intereses.</p></section><div class="notice"><b>Base de datos vacay:</b> ${VACAY_DB[d]?.status==="researched_seed"?"destino con investigación inicial y fuentes de referencia.":"motor completo activo; contenido local pendiente de investigación."} Vacay no inventará restaurantes, horarios o precios: las fichas comerciales se incorporan solo cuando han sido investigadas; horarios, precios y valoraciones se refrescan independientemente.</div><div class="panel"><h2>Busca lo que quieras</h2><p class="lead" style="font-size:16px">¿Estás en el Coliseo y quieres comer? ¿Buscas un sitio para desayunar cerca de tu hotel? Escríbelo y vacay buscará dentro de su propia base de datos.</p><div class="searchbox"><input id="vacaySearch" placeholder="Ej.: comer cerca del Coliseo, heladería, cena romántica..." onkeydown="if(event.key==='Enter') searchVacay()"><button onclick="searchVacay()">Buscar</button></div><div id="searchResults" class="search-results"></div></div>
 <div class="panel"><h2>1. ¿Qué viaje quieres vivir?</h2><div class="moods">${moodButtons}</div></div>
-<div class="panel"><h2>2. Cuéntame cómo viajas</h2><div class="fields">
+<div class="panel profile-panel"><div class="profile-kicker">Perfil vacay</div><h2>2. Cuéntame cómo quieres vivir el viaje</h2><p class="lead" style="font-size:16px">Cuanto más nos cuentes, más a medida será el plan. No buscamos darte una lista: buscamos decidir contigo qué encaja cada día.</p>
+<div class="fields">
 ${select("Días","days",[1,2,3,4,5,6,7],state.days)}
 ${select("Ritmo","pace",["Sin prisas","Equilibrado","Aprovecharlo todo"],state.pace)}
 ${select("Con quién","company",["Pareja","Amigos","Familia","Solo"],state.company)}
 ${select("Presupuesto","budget",["Ajustado","Medio","Flexible"],state.budget)}
 </div>
-<div style="margin-top:25px"><div class="eyebrow">¿Qué quieres incluir?</div><div class="chips">${intButtons}</div></div>
-<div style="margin-top:25px"><div class="eyebrow">Necesidades</div>${select("","needs",["Sin restricciones","Pocas escaleras","Minimizar desplazamientos"],state.needs)}</div>
-<button class="primary wide" onclick="buildItinerary()">Crear mi itinerario ✦</button></div>
+<div class="profile-subtitle">Tus horas</div>
+<div class="time-grid">
+<div class="field"><label>Empiezo el día</label><input id="startTime" type="time" value="${state.startTime}" onchange="state.startTime=this.value"></div>
+<div class="field"><label>Hora límite</label><input id="endTime" type="time" value="${state.endTime}" onchange="state.endTime=this.value"></div>
+<div class="field"><label>Quiero comer sobre</label><input id="lunchTime" type="time" value="${state.lunchTime}" onchange="state.lunchTime=this.value"></div>
+<div class="field"><label>Quiero cenar sobre</label><input id="dinnerTime" type="time" value="${state.dinnerTime}" onchange="state.dinnerTime=this.value"></div>
+</div>
+<div class="profile-subtitle">Qué quieres sentir / hacer</div><div class="moods">${moodButtons}</div>
+<div style="margin-top:24px"><div class="eyebrow">Intereses</div><div class="chips">${intButtons}</div></div>
+<div style="margin-top:24px"><div class="eyebrow">Necesidades y preferencias prácticas</div>${select("","needs",["Sin restricciones","Pocas escaleras","Minimizar desplazamientos"],state.needs)}</div>
+<div style="margin-top:18px"><label style="display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Algo que vacay debería tener en cuenta</label><textarea id="planNote" class="plan-note" placeholder="Ej.: no quiero madrugar, me encanta parar a tomar café, prefiero evitar zonas demasiado turísticas..." oninput="state.planNote=this.value">${esc(state.planNote)}</textarea></div>
+<button class="primary wide" onclick="buildItinerary()">Crear mi itinerario a medida ✦</button></div>
 <div class="panel"><h2>Sitios concretos que encajan contigo</h2><p class="lead" style="font-size:16px">Aquí vacay deja de darte ideas genéricas: lugares reales que puedes añadir a tu viaje.</p><div id="placeGrid" class="placegrid"></div></div><div id="routeBuilder"></div><div class="panel"><h2>Dónde comer de verdad</h2><div class="notice"><b>Fase 2 activa:</b> fichas comerciales reales incorporadas en destinos prioritarios; cada ficha conserva su fuente y fecha de comprobación.</div><p class="lead" style="font-size:16px">Vacay puede seleccionar restaurantes y cafés según presupuesto, estilo y momento del día. Las fichas comerciales deben refrescarse porque horarios y disponibilidad cambian.</p><div id="foodGrid" class="placegrid"></div></div><div class="panel"><h2>Experiencias para ti</h2><p class="lead" style="font-size:16px">Una selección inicial que se adapta al perfil que acabas de definir.</p><div class="expgrid">${expHTML}</div></div>
 <div id="route"></div>`);
 let places=getPlaces(state.destination);
@@ -124,14 +134,14 @@ if(pg) pg.innerHTML=places.length?places.map((p,i)=>`<article class="placecard">
 const routePanel=document.getElementById("routeBuilder");
 if(routePanel) routePanel.innerHTML=`
 <div class="panel"><h2>Tu día, paso a paso</h2>
-<p class="lead" style="font-size:16px">Dinos a qué hora sales y vacay te ordena el día parada por parada, incluyendo el tiempo aproximado de desplazamiento.</p>
+<p class="lead" style="font-size:16px">Aquí puedes reajustar el día sobre la marcha. La salida, la comida, la cena y la hora límite parten de tu perfil vacay.</p>
 <div class="route-controls">
-<div><label>Hora de salida</label><input id="startTime" type="time" value="09:00"></div>
-<button class="primary" onclick="buildDetailedRoute()">Construir mi día ✦</button>
+<div><label>Hora de salida</label><input id="routeStartTime" type="time" value="${state.startTime}" onchange="state.startTime=this.value"></div>
+<button class="primary" onclick="buildDetailedRoute()">Recalcular mi día ✦</button>
 </div>
-<button class="locate" onclick="findNextFromLocation()">⌖ Estoy aquí: ¿qué me interesa cerca?</button>
+<button class="locate" onclick="findNextFromLocation()">⌖ Estoy aquí · dime qué tengo cerca</button>
 <div id="nowCard" class="nowcard"></div>
-<div id="detailedRoute"></div></div>`;
+<div id="detailedRoute"></div></div>
 
 }
 
@@ -190,19 +200,25 @@ cur+=p.duration;
 box.innerHTML=`<div class="notice"><b>Ruta de ${esc(state.destination)}</b> · salida ${esc(start)} · duración estimada ${Math.round((cur-mins(start))/60*10)/10} h.</div>${out}<div class="notice">Los tiempos de desplazamiento son orientativos. En la siguiente fase podemos conectarlos a rutas reales a pie, transporte público, coche o barco.</div>`;
 box.scrollIntoView({behavior:"smooth",block:"start"});
 }
+function mapsNearbyUrl(lat,lon,query){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query)+"&center="+encodeURIComponent(lat+","+lon);}
 function findNextFromLocation(){
 let card=document.getElementById("nowCard");if(!card)return;
-if(!navigator.geolocation){
-card.classList.add("show");card.innerHTML="<b>Tu navegador no permite geolocalización.</b><p>Prueba vacay desde una dirección HTTPS (por ejemplo, GitHub Pages) y permite el acceso a tu ubicación.</p>";return;
-}
-card.classList.add("show");card.innerHTML="<b>Buscando qué tienes cerca…</b><p>Necesito tu permiso de ubicación para calcularlo.</p>";
+if(!window.isSecureContext||!navigator.geolocation){card.classList.add("show");card.innerHTML="<b>La ubicación necesita una conexión segura.</b><p>Abre vacay desde su URL HTTPS y permite la ubicación cuando el navegador la solicite.</p>";return;}
+card.classList.add("show");card.innerHTML="<b>Buscando qué tienes cerca…</b><p>Solo usamos tu ubicación después de que tú des permiso.</p>";
 navigator.geolocation.getCurrentPosition(pos=>{
-let places=(PLACES[state.destination]||[]).concat(DETAILED_ROUTES[state.destination]||[]);
-if(!places.length){card.innerHTML="<b>Aún no tengo puntos concretos cargados para este destino.</b><p>La función ya está preparada para usarlos cuando ampliemos la base.</p>";return}
+const lat=pos.coords.latitude,lon=pos.coords.longitude;
+let places=(getPlaces(state.destination)||[]).concat(DETAILED_ROUTES[state.destination]||[]).filter(p=>p&&p.name);
+let geo=places.filter(p=>Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lon)));
+if(geo.length){
 function dist(a,b,c,d){let R=6371,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180;let q=Math.sin(x/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
-let sorted=places.filter(p=>p.lat&&p.lon).map(p=>({...p,km:dist(pos.coords.latitude,pos.coords.longitude,p.lat,p.lon)})).sort((a,b)=>a.km-b.km);
-let p=sorted[0];card.innerHTML=`<b>Ahora mismo, cerca de ti</b><p><strong>${esc(p.name)}</strong><br>${esc(p.type||"Punto de interés")} · aproximadamente ${p.km<1?(Math.round(p.km*1000)+" m"):(p.km.toFixed(1)+" km")}.</p><button class="primary" onclick='alert("Aquí conectaremos el mapa y las indicaciones de ruta.")'>Ir hacia allí</button>`;
-},err=>{card.innerHTML="<b>No he podido obtener tu ubicación.</b><p>Comprueba que has permitido la ubicación y que estás usando vacay desde HTTPS.</p>"},{enableHighAccuracy:true,timeout:8000});
+let p=geo.map(p=>({...p,km:dist(lat,lon,p.lat,p.lon)})).sort((a,b)=>a.km-b.km)[0];
+let q=state.interests.length?state.interests.join(" "):"sitios para visitar";
+card.innerHTML=`<b>Ahora mismo, cerca de ti</b><p><strong>${esc(p.name)}</strong><br>${esc(p.type||"Punto de interés")} · aproximadamente ${p.km<1?(Math.round(p.km*1000)+" m"):(p.km.toFixed(1)+" km")}.</p><div class="nearby-actions"><a class="primary" href="${mapsNearbyUrl(lat,lon,p.name)}" target="_blank" rel="noopener">Ir hacia allí ↗</a><a class="locate" href="${mapsNearbyUrl(lat,lon,q)}" target="_blank" rel="noopener">Buscar algo que me apetezca ↗</a></div>`;
+}else{
+let q=state.interests.length?state.interests.join(" "):"lugares para visitar";
+card.innerHTML=`<b>Estoy contigo.</b><p>Este destino todavía no tiene coordenadas suficientes en la base local para ordenar los sitios por distancia. Te llevo directamente a una búsqueda cercana según tus intereses.</p><div class="nearby-actions"><a class="primary" href="${mapsNearbyUrl(lat,lon,q)}" target="_blank" rel="noopener">Buscar ${esc(q)} cerca ↗</a></div>`;
+}
+},err=>{let msg=err.code===1?"Has bloqueado la ubicación. Puedes activarla en los permisos del navegador.":"No he podido obtener tu posición ahora mismo. Prueba de nuevo en unos segundos.";card.innerHTML="<b>No he podido usar tu ubicación.</b><p>"+msg+"</p>";},{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
 }
 function addFoodToPlan(name){
 let foods=VACAY_BUSINESSES[state.destination]||[],f=foods.find(x=>x.name===name);if(!f)return;
@@ -220,32 +236,47 @@ function select(label,key,vals,val){
 return `<div class="field">${label?`<label>${label}</label>`:""}<select onchange='state[${JSON.stringify(key)}]=this.value'>${vals.map(v=>`<option ${String(v)===String(val)?"selected":""}>${esc(v)}</option>`).join("")}</select></div>`
 }
 function toggleInterest(x){state.interests=state.interests.includes(x)?state.interests.filter(a=>a!==x):[...state.interests,x];renderDestination()}
-function buildItinerary(){
-let n=Number(state.days)||3;
-let base=SPECIAL[state.destination]||[
-["Descubrir el destino","09:30","Paseo y principales lugares de interés."],
-["Comer como local","13:30","Comida y especialidades locales."],
-["Tarde a tu ritmo","17:00","Actividad adaptada a tus intereses."],
-["Atardecer y cena","20:30","Ambiente, vistas y cena."]
-];
-let days=[];
-for(let i=1;i<=n;i++){
-let arr=base.map((x,j)=>({time:x[1],title:j===0?x[0]:j===1?x[0]:j===2?x[0]:x[0],desc:x[2]}));
-if(state.pace==="Sin prisas"){arr[2].desc+=" Deja margen para parar, tomar algo y disfrutar sin correr."}
-if(state.pace==="Aprovecharlo todo"){arr[2].desc+=" Puedes añadir una segunda parada si te apetece."}
-if(state.needs==="Pocas escaleras"){arr[0].desc+=" Prioriza recorridos sencillos y evita tramos con muchas escaleras."}
-if(state.needs==="Minimizar desplazamientos"){arr[1].desc+=" La ruta se plantea manteniendo las paradas lo más agrupadas posible."}
-days.push(arr)
+function scorePlace(p){
+let text=(p.name+" "+(p.type||"")+" "+(p.description||"")+" "+(p.why||"")+" "+(p.tag||"")).toLowerCase(),score=0;
+state.interests.map(x=>x.toLowerCase()).forEach(t=>{if(text.includes(t))score+=6});
+if(state.mood==="Romántico"&&/románt|pareja|sunset|atardecer|rooftop|barco/.test(text))score+=5;
+if(state.mood==="Playa"&&/playa|mar|costa|beach/.test(text))score+=6;
+if(state.mood==="Gastronomía"&&/gastronom|restaurante|comida|café|mercado/.test(text))score+=6;
+if(state.mood==="Cultura"&&/cultura|monumento|museo|historia|iglesia|arquitectura/.test(text))score+=6;
+if(state.mood==="Aventura"&&/aventura|naturaleza|sender|montaña|barco/.test(text))score+=6;
+if(state.mood==="Sin prisas"&&/paseo|parque|playa|café|mirador|barrio/.test(text))score+=3;
+if(state.company==="Pareja"&&/románt|atardecer|barco|rooftop/.test(text))score+=2;
+if(state.needs==="Pocas escaleras"&&/escalera|stairs|subida|montaña/.test(text))score-=5;
+return score;
 }
-let saved=JSON.parse(localStorage.getItem("vacaySaved")||"[]");
-let html=`<div class="panel"><h2>Tu ruta en ${esc(state.destination)}</h2><div class="notice"><b>Por qué encaja:</b> has elegido ${esc(state.mood.toLowerCase())}, ${esc(state.pace.toLowerCase())}, ${esc(state.company.toLowerCase())} y presupuesto ${esc(state.budget.toLowerCase())}. La ruta prioriza ${state.interests.length?esc(state.interests.join(", ").toLowerCase()):"tus preferencias"}.</div><div class="itinerary" style="margin-top:18px">`;
-days.forEach((day,i)=>{
-let key=state.destination+"-"+(i+1);
-html+=`<article class="day"><div class="daytop"><h3>Día ${i+1}</h3><button class="save" onclick='saveDay(${JSON.stringify(key)},${JSON.stringify(day)})'>♡ Guardar</button></div>${day.map(s=>`<div class="slot"><div class="time">${s.time}</div><div><h4>${esc(s.title)}</h4><p>${esc(s.desc)}</p></div></div>`).join("")}</article>`
-});
-html+=`</div></div>`;
-document.getElementById("route").innerHTML=html;
-document.getElementById("route").scrollIntoView({behavior:"smooth"});
+function pickPlacesForPlan(){
+let all=[...(getPlaces(state.destination)||[])],seen=new Set(all.map(p=>p.name));
+(DETAILED_ROUTES[state.destination]||[]).forEach(p=>{if(!seen.has(p.name)){all.push(p);seen.add(p.name)}});
+return all.filter(p=>p.name&&!/restaurante|cafetería|café|bar de tapas|comida|heladería|dulce/i.test(p.type||"")).sort((a,b)=>scorePlace(b)-scorePlace(a));
+}
+function makeTimeLabel(m){return hh(m)}
+function buildItinerary(){
+state.startTime=document.getElementById("startTime")?.value||state.startTime;state.endTime=document.getElementById("endTime")?.value||state.endTime;state.lunchTime=document.getElementById("lunchTime")?.value||state.lunchTime;state.dinnerTime=document.getElementById("dinnerTime")?.value||state.dinnerTime;state.planNote=document.getElementById("planNote")?.value||state.planNote;
+let n=Number(state.days)||3,start=mins(state.startTime),end=mins(state.endTime),lunch=mins(state.lunchTime),dinner=mins(state.dinnerTime);
+if(end<=start)end+=1440;if(lunch<=start)lunch+=1440;if(dinner<=lunch)dinner+=1440;
+let pool=pickPlacesForPlan(),foods=VACAY_BUSINESSES[state.destination]||[],attractionCount=state.pace==="Sin prisas"?2:state.pace==="Aprovecharlo todo"?4:3,cursor=0,days=[];
+for(let i=1;i<=n;i++){
+let selected=[];for(let k=0;k<attractionCount;k++){let p=pool[(cursor+k)%Math.max(pool.length,1)];if(p)selected.push(p)}cursor+=attractionCount;
+let slots=[],t=start;
+selected.slice(0,2).forEach((p,idx)=>{slots.push({time:makeTimeLabel(t),title:p.name,desc:(p.description||p.why||"Parada seleccionada para ti.")+" · "+(idx===0?"inicio del día":"continuación del recorrido"),type:"place",place:p});t+=state.pace==="Sin prisas"?70:60;t+=state.needs==="Minimizar desplazamientos"?8:15;});
+if(t<lunch-35)t=lunch-75;
+let lunchFood=foods.find(f=>/restaurante|comida|taberna/i.test(f.type||"")&&/€/.test(f.price||""))||foods.find(f=>/restaurante|comida|taberna/i.test(f.type||""));
+slots.push({time:makeTimeLabel(lunch-10),title:lunchFood?lunchFood.name:"Pausa para comer",desc:lunchFood?("Comida propuesta según tu perfil · "+lunchFood.price+" · "+lunchFood.hours):"Momento reservado para comer según el horario que has elegido.",type:"food",food:lunchFood});
+t=lunch+75;
+selected.slice(2).forEach(p=>{if(t+50<dinner-30){slots.push({time:makeTimeLabel(t),title:p.name,desc:(p.description||p.why||"Experiencia seleccionada para ti.")+(state.needs==="Pocas escaleras"?" Se prioriza un recorrido sencillo.":""),type:"place",place:p});t+=state.pace==="Sin prisas"?75:65;t+=state.needs==="Minimizar desplazamientos"?8:15;}});
+let dinnerFood=foods.find(f=>/restaurante|taberna/i.test(f.type||"")&&/cena|romántico|rooftop/i.test(f.tag||""))||foods.find(f=>/restaurante|taberna/i.test(f.type||""));
+slots.push({time:makeTimeLabel(dinner),title:dinnerFood?dinnerFood.name:"Cena en "+state.destination,desc:dinnerFood?("Cena propuesta por vacay · "+dinnerFood.price+" · "+dinnerFood.hours):"Cena reservada a la hora que has elegido.",type:"food",food:dinnerFood});
+slots.push({time:makeTimeLabel(Math.max(dinner+75,end-30)),title:"Fin del día",desc:state.pace==="Sin prisas"?"Queda tiempo libre para descansar o improvisar.":"Fin de la ruta planificada.",type:"end"});
+days.push(slots);
+}
+let why=`Has elegido ${state.mood.toLowerCase()}, ritmo ${state.pace.toLowerCase()}, ${state.company.toLowerCase()}, presupuesto ${state.budget.toLowerCase()} y ${state.needs.toLowerCase()}.`;if(state.planNote)why+=` También he tenido en cuenta: “${esc(state.planNote)}”.`;
+let html=`<div class="panel"><div class="profile-result"><div><div class="eyebrow">Tu perfil vacay</div><h2>Este viaje está hecho para ti.</h2><p class="lead" style="font-size:16px">${why}</p></div><div class="profile-chips"><span>${esc(state.days)} días</span><span>${esc(state.startTime)} → ${esc(state.endTime)}</span><span>Comida ${esc(state.lunchTime)}</span><span>Cena ${esc(state.dinnerTime)}</span></div></div><div class="notice"><b>Qué cambia aquí:</b> vacay reparte lugares de la base según tus intereses y ritmo, reserva tus horas de comida y cena y deja margen según la forma en la que quieres viajar.</div><div class="itinerary" style="margin-top:18px">`;
+days.forEach((day,i)=>{let key=state.destination+"-"+(i+1)+"-"+Date.now();html+=`<article class="day"><div class="daytop"><h3>Día ${i+1}</h3><button class="save" onclick='saveDay(${JSON.stringify(key)},${JSON.stringify(day)})'>♡ Guardar</button></div>${day.map(s=>`<div class="slot"><div class="time">${esc(s.time)}</div><div><h4>${esc(s.title)}</h4><p>${esc(s.desc)}</p>${s.type==="place"&&s.place?.tag?`<span class="route-tag">${esc(s.place.tag)}</span>`:s.type==="food"&&s.food?`<span class="route-tag">Ficha comercial</span>`:s.type==="end"?`<span class="route-tag">Tiempo libre</span>`:""}</div></div>`).join("")}</article>`});html+=`</div></div>`;document.getElementById("route").innerHTML=html;document.getElementById("route").scrollIntoView({behavior:"smooth"});
 }
 function saveDay(key,day){
 let saved=JSON.parse(localStorage.getItem("vacaySaved")||"[]");
