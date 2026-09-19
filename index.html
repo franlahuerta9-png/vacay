@@ -73,21 +73,88 @@ shell('<div class="back"><button onclick=\'goCountry("'+state.country+'")\'>← 
 }function toggleInterest(x){state.interests=state.interests.includes(x)?state.interests.filter(a=>a!==x):state.interests.concat(x);render()} function toggleAvoid(x){state.avoid=state.avoid.includes(x)?state.avoid.filter(a=>a!==x):state.avoid.concat(x);render()} function chooseStyle(x){state.style=x;render()}
 function build(){
 let n=Number(state.days)||3;
-let base=state.destination==="Roma"?["Coliseo y centro histórico","Pasta romana","Trastevere al atardecer","Cena romana"]:state.destination==="Positano"?["Centro y miradores","Comida italiana","Playa y costa","Atardecer y cena"]:state.destination==="París"?["Barrio emblemático","Bistró francés","Museo o paseo","Cena + luces"]:state.destination==="Barcelona"?["Casco histórico","Tapas","Arquitectura y mar","Cena mediterránea"]:["Descubrir el destino","Comer como local","Tarde a tu ritmo","Atardecer y cena"];
+const pools={
+"Roma":[
+["Coliseo y centro histórico",["Cultura"],["Imprescindibles"],"Centro"],
+["Foro Romano y Palatino",["Cultura","Naturaleza"],["Imprescindibles"],"Centro"],
+["Pasta romana en Trastevere",["Gastronomía"],["Sitios locales","Mezcla"],"Trastevere"],
+["Trastevere al atardecer",["Atardecer","Cultura"],["Sitios locales","Mezcla"],"Trastevere"],
+["Villa Borghese",["Naturaleza"],["Sitios locales","Mezcla"],"Centro"],
+["Fontana di Trevi de noche",["Cultura","Atardecer"],["Imprescindibles","Mezcla"],"Centro"],
+["Cena romana",["Gastronomía"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"]
+],
+"Positano":[
+["Centro de Positano y miradores",["Cultura","Atardecer"],["Imprescindibles","Mezcla"],"Centro"],
+["Spiaggia Grande",["Playa"],["Imprescindibles","Mezcla"],"Costa"],
+["Fornillo y paseo de costa",["Playa","Naturaleza"],["Sitios locales","Mezcla"],"Costa"],
+["Paseo en barco por la Costa Amalfitana",["Barco","Naturaleza"],["Imprescindibles","Mezcla"],"Costa"],
+["Atardecer en un mirador",["Atardecer"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"],
+["Comida italiana",["Gastronomía"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"],
+["Cena con vistas",["Gastronomía","Atardecer"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"]
+],
+"París":[
+["Torre Eiffel y Trocadéro",["Cultura","Atardecer"],["Imprescindibles","Mezcla"],"Centro"],
+["Louvre",["Cultura"],["Imprescindibles"],"Centro"],
+["Le Marais",["Cultura","Gastronomía"],["Sitios locales","Mezcla"],"Marais"],
+["Montmartre",["Cultura","Atardecer"],["Imprescindibles","Sitios locales","Mezcla"],"Montmartre"],
+["Paseo por el Sena",["Naturaleza","Atardecer"],["Sitios locales","Mezcla"],"Centro"],
+["Bistró francés",["Gastronomía"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"],
+["Cena + luces",["Gastronomía","Atardecer"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"]
+],
+"Barcelona":[
+["Barrio Gótico",["Cultura"],["Imprescindibles","Mezcla"],"Centro"],
+["Sagrada Família",["Cultura"],["Imprescindibles"],"Centro"],
+["El Born",["Cultura","Gastronomía"],["Sitios locales","Mezcla"],"Centro"],
+["Park Güell",["Naturaleza","Cultura"],["Imprescindibles","Mezcla"],"Gràcia"],
+["Barceloneta",["Playa","Naturaleza"],["Imprescindibles","Mezcla"],"Mar"],
+["Tapas y gastronomía",["Gastronomía"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"],
+["Atardecer frente al mar",["Atardecer","Playa"],["Imprescindibles","Sitios locales","Mezcla"],"Mar"]
+]
+};
+let fallback=[
+["Descubrir el centro histórico",["Cultura"],["Imprescindibles","Mezcla"],"Centro"],
+["Barrio con ambiente local",["Cultura","Gastronomía"],["Sitios locales","Mezcla"],"Centro"],
+["Comer como local",["Gastronomía"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"],
+["Paseo por la naturaleza",["Naturaleza"],["Sitios locales","Mezcla"],"Exterior"],
+["Lugar para el atardecer",["Atardecer"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"],
+["Experiencia de ocio",["Aventura"],["Sitios locales","Mezcla"],"Centro"],
+["Cena local",["Gastronomía"],["Imprescindibles","Sitios locales","Mezcla"],"Centro"]
+];
+let pool=pools[state.destination]||fallback;
+let score=item=>{
+let s=0;
+state.interests.forEach(i=>{if(item[1].includes(i))s+=5});
+if(item[2].includes(state.style))s+=3;
+if(state.mood==="Gastronomía"&&item[1].includes("Gastronomía"))s+=3;
+if(state.mood==="Playa"&&item[1].includes("Playa"))s+=3;
+if(state.mood==="Cultura"&&item[1].includes("Cultura"))s+=3;
+if(state.mood==="Aventura"&&(item[1].includes("Barco")||item[1].includes("Naturaleza")))s+=3;
+if(state.mood==="Romántico"&&item[1].includes("Atardecer"))s+=3;
+if(state.mood==="Sin prisas"&&item[1].includes("Naturaleza"))s+=2;
+if(state.avoid.includes("Muchas caminatas")&&item[3]==="Centro")s+=1;
+return s;
+};
+let ranked=pool.map((x,i)=>({x,i,s:score(x)})).sort((a,b)=>b.s-a.s||a.i-b.i);
+if(state.style==="Imprescindibles")ranked.sort((a,b)=>(b.x[2].includes("Imprescindibles")?1:0)-(a.x[2].includes("Imprescindibles")?1:0)||b.s-a.s);
+if(state.style==="Sitios locales")ranked.sort((a,b)=>(b.x[2].includes("Sitios locales")?1:0)-(a.x[2].includes("Sitios locales")?1:0)||b.s-a.s);
+let selected=ranked.slice(0,4).map(r=>r.x);
+if(state.style==="Mucho tiempo libre")selected=ranked.slice(0,3).map(r=>r.x);
+if(state.avoid.includes("Muchas caminatas"))selected=selected.filter(x=>x[3]!=="Exterior"||selected.length<=2);
+if(state.avoid.includes("Muchas escaleras"))selected=selected.filter(x=>!x[0].toLowerCase().includes("montmartre")&&!x[0].toLowerCase().includes("miradores"));
+if(!selected.length)selected=ranked.slice(0,3).map(r=>r.x);
 let start=state.start||"09:00",end=state.end||"22:00";
 let toMin=t=>{let p=t.split(":").map(Number);return p[0]*60+p[1]};
 let fmt=m=>String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
 let a=toMin(start),b=toMin(end);if(b<=a)b+=24*60;
-let slots=state.pace==="Sin prisas"?[0.05,0.36,0.66,0.86]:state.pace==="Aprovecharlo todo"?[0.02,0.30,0.55,0.78]:[0.05,0.34,0.63,0.86];
-let active=base.slice();
-if(state.avoid.includes("Madrugar"))slots=slots.map((x,j)=>j===0?Math.max(x,0.14):x);
-if(state.avoid.includes("Turismo masificado"))slots=slots.map((x,j)=>j<2?Math.min(x+0.05,0.92):x);
-if(state.avoid.includes("Muchas caminatas"))active=active.map((x,j)=>j===2?"Tarde con menos desplazamientos":x);
+let slots=state.pace==="Sin prisas"?[0.08,0.40,0.72,0.9]:state.pace==="Aprovecharlo todo"?[0.02,0.27,0.52,0.76]:[0.05,0.34,0.63,0.86];
+if(selected.length===3)slots=[slots[0],slots[1],slots[2]];
+if(state.avoid.includes("Madrugar"))slots=slots.map((x,j)=>j===0?Math.max(x,0.15):x);
+if(state.avoid.includes("Turismo masificado"))slots=slots.map((x,j)=>j<2?Math.min(x+0.06,0.92):x);
 let days="";
 for(let i=1;i<=n;i++){
-days+='<article class="day"><div class="daytop"><h3>Día '+i+'</h3><button class="save" onclick="saveDay('+i+')">♡ Guardar</button></div>'+active.map((x,j)=>{let tm=Math.round(a+(b-a)*slots[j]);let note=state.pace==="Sin prisas"?"Ruta con margen para parar y disfrutar.":state.pace==="Aprovecharlo todo"?"Ritmo más intenso para aprovechar el día.":"Ruta equilibrada según tus preferencias.";if(state.interests.includes("Gastronomía")&&j===1)note+=" Se da más espacio a la experiencia gastronómica.";if(state.interests.includes("Atardecer")&&j===2)note+=" Este bloque queda pensado para llegar con tiempo al atardecer.";if(state.avoid.includes("Muchas caminatas")&&j===2)note+=" Se reduce el desplazamiento a pie.";if(state.style==="Mucho tiempo libre")note+=" Se mantiene margen libre alrededor de esta parada.";return '<div class="slot"><div><b>'+fmt(tm)+'</b></div><div><h4>'+esc(x)+'</h4><p>'+esc(note)+'</p></div></div>'}).join("")+'</article>'
+days+='<article class="day"><div class="daytop"><h3>Día '+i+'</h3><button class="save" onclick="saveDay('+i+')">♡ Guardar</button></div>'+selected.map((item,j)=>{let tm=Math.round(a+(b-a)*slots[Math.min(j,slots.length-1)]);let note=state.pace==="Sin prisas"?"Ruta con margen para parar y disfrutar.":state.pace==="Aprovecharlo todo"?"Ritmo más intenso para aprovechar el día.":"Ruta equilibrada según tus preferencias.";if(item[1].includes("Gastronomía"))note+=" Incluido por tu interés en gastronomía.";if(item[1].includes("Atardecer"))note+=" Elegido para encajar con tu interés por el atardecer.";if(item[1].includes("Playa"))note+=" Incluido por tu interés en playa.";if(item[1].includes("Barco"))note+=" Incluido por tu interés en barco.";if(item[1].includes("Naturaleza"))note+=" Incluido por tu interés en naturaleza.";if(state.avoid.includes("Muchas caminatas"))note+=" Se priorizan zonas con menos desplazamientos.";if(state.avoid.includes("Turismo masificado"))note+=" Se priorizan alternativas menos orientadas al turismo masificado.";if(state.style==="Mucho tiempo libre")note+=" Se deja más tiempo libre alrededor de esta experiencia.";return '<div class="slot"><div><b>'+fmt(tm)+'</b></div><div><h4>'+esc(item[0])+'</h4><p>'+esc(note)+'</p></div></div>'}).join("")+'</article>';
 }
-document.getElementById("route").innerHTML='<div class="panel"><h2>Tu itinerario personalizado</h2><div class="notice"><b>Por qué encaja:</b> '+esc(state.mood)+', '+esc(state.pace)+', '+esc(state.company)+', presupuesto '+esc(state.budget)+'. Intereses: '+esc(state.interests.join(", "))+'.'+(state.avoid.length?" Evitas: "+esc(state.avoid.join(", "))+'.':"")+' </div><div class="itinerary" style="margin-top:15px">'+days+'</div></div>';document.getElementById("route").scrollIntoView({behavior:"smooth"})
+document.getElementById("route").innerHTML='<div class="panel"><h2>Tu itinerario personalizado</h2><div class="notice"><b>Así hemos usado tus respuestas:</b> '+esc(state.mood)+', '+esc(state.pace)+', '+esc(state.company)+', presupuesto '+esc(state.budget)+'. Intereses: '+esc(state.interests.join(", "))+'.'+(state.avoid.length?" Evitas: "+esc(state.avoid.join(", "))+'.':"")+' Estilo: '+esc(state.style)+'.</div><div class="itinerary" style="margin-top:15px">'+days+'</div></div>';document.getElementById("route").scrollIntoView({behavior:"smooth"})
 }
 function saveDay(i){let a=JSON.parse(localStorage.getItem("vacaySaved")||"[]");let k=state.destination+"-"+i;if(!a.some(x=>x.key===k))a.push({key:k,destination:state.destination,day:i});localStorage.setItem("vacaySaved",JSON.stringify(a));updateCount();alert("Día guardado en Mi viaje ✦")}
 function saved(){let a=JSON.parse(localStorage.getItem("vacaySaved")||"[]");shell('<div class="back"><button onclick="home()">← Volver a Europa</button></div><section class="hero"><div class="eyebrow">Tu viaje</div><h1>Mi viaje.</h1><p class="lead">Aquí guardas los días que quieres conservar.</p></section>'+(a.length?a.map(x=>'<div class="panel"><h2>'+esc(x.destination)+' · Día '+x.day+'</h2><p class="muted">Guardado en tu viaje ✦</p></div>').join(""):'<div class="empty">Todavía no has guardado ningún día.</div>'))}
