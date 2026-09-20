@@ -264,6 +264,22 @@ if(target+item[4]<=finish)dayItems=[{item,start:target,travel:0,from:"Alojamient
 days.push({date:dayDate,items:dayItems,used,hotel:activeStay});
 }
 
+let routeHtml=days.map((day,di)=>{
+let totalWalk=day.items.reduce((sum,x)=>sum+(x.travel||0),0);
+let totalVisit=day.items.reduce((sum,x)=>sum+x.item[4],0);
+let blocks=day.items.map((x,j)=>{
+let item=x.item;
+let note="";
+if(state.interests.includes(item[1]))note+="Elegido por tu interés en "+item[1].toLowerCase()+". ";
+if(state.style===item[2]||state.style==="Mezcla"&&item[2]==="Mezcla")note+="Encaja con tu forma de descubrir el destino. ";
+if(state.avoid.includes("Muchas caminatas"))note+="Se ha limitado el desplazamiento a pie. ";
+if(state.avoid.includes("Turismo masificado"))note+="Se han desplazado las visitas hacia horas posteriores cuando el horario lo permite. ";
+return '<div class="slot"><div class="slottime">'+fmt(x.start)+'</div><div><h4>'+esc(item[0])+'</h4><p><b>'+item[4]+' min</b> de visita'+(x.travel?' · ↓ '+x.travel+' min andando':'')+(x.from&&x.from!=="Alojamiento"?' desde '+esc(x.from):' desde el alojamiento')+'</p><p style="margin-top:5px">'+esc(item[7])+'</p>'+(note?'<p style="margin-top:5px;color:#355044">'+esc(note)+'</p>':'')+(item[0].startsWith("MAR Positano")?'<p style="margin-top:5px;font-size:12px;color:#68736d">Horario usado en el plan: 09:00–20:00 de abril a octubre; 10:00–16:00 del 1 de noviembre al 10 de abril.</p>':'')+'</div></div>';
+}).join("");
+return '<article class="day"><div class="daytop"><h3>Día '+(di+1)+' · '+esc(dayName(day.date))+'</h3><button class="save" onclick="saveDay('+(di+1)+')">♡ Guardar</button></div><div class="route-summary"><span class="route-chip">🏨 '+esc((day.hotel||{}).hotel||"Alojamiento no indicado")+'</span><span class="route-chip">'+day.items.length+' paradas</span><span class="route-chip">'+totalVisit+' min de visita</span><span class="route-chip">≈ '+totalWalk+' min andando</span></div><div class="routeflow"><div class="route-chip" style="display:inline-block;margin-top:12px">Salida desde alojamiento · '+esc((day.hotel||{}).hotel||"indicado por ti")+'</div>'+blocks+'<div class="route-chip" style="display:inline-block;margin-top:8px">Regreso hacia alojamiento</div></div></article>';
+}).join("");
+let explanation='Hemos usado tus respuestas para construir una secuencia geográfica: preferencias, horarios y, cuando hay datos disponibles, proximidad real entre lugares. Cada día se separa en una zona lógica para reducir desplazamientos innecesarios.';
+
 document.getElementById("route").innerHTML='<div class="panel"><h2>Tu ruta personalizada</h2><div class="notice"><b>Así funciona esta ruta:</b> '+esc(explanation)+'<br><span style="font-size:13px">Cuando el destino tiene coordenadas, la ruta ordena las paradas por proximidad y calcula un tiempo andando aproximado entre ellas. El alojamiento todavía necesita una dirección/coordenadas para convertirse en el punto geográfico exacto de salida y regreso.</span></div><div class="itinerary" style="margin-top:15px">'+routeHtml+'</div></div>';
 document.getElementById("route").scrollIntoView({behavior:"smooth"});
 }
