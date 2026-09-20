@@ -135,6 +135,49 @@ const generic=[
 ["Atardecer","Atardecer","Mezcla","Centro",75,["16:00","23:00"],null,"Punto para el final de la tarde."]
 ];
 let pool=pools[state.destination]||generic;
+let geo={
+"Roma":{
+"Coliseo":[41.8902,12.4922],"Foro Romano y Palatino":[41.8925,12.4853],"Pasta romana en Trastevere":[41.8897,12.4690],"Trastevere al atardecer":[41.8897,12.4690],"Villa Borghese":[41.9142,12.4922],"Fontana di Trevi":[41.9009,12.4833]
+},
+"Positano":{
+"Piazza dei Mulini":[40.6281,14.4849],"Via dei Mulini":[40.6283,14.4851],"Chiesa di Santa Maria Assunta":[40.6281,14.4852],"MAR Positano · Museo Archeologico Romano":[40.6281,14.4852],"Spiaggia Grande":[40.6267,14.4870],"Via Positanesi d'America + Torre Trasita":[40.6257,14.4878],"Spiaggia di Fornillo":[40.6260,14.4804],"Paseo en barco desde Spiaggia Grande":[40.6267,14.4870],"Cena junto a Spiaggia Grande":[40.6267,14.4870]
+},
+"París":{
+"Torre Eiffel y Trocadéro":[48.8584,2.2945],"Louvre":[48.8606,2.3376],"Le Marais":[48.8566,2.3622],"Montmartre":[48.8867,2.3431],"Paseo por el Sena":[48.8566,2.3522],"Bistró francés":[48.8566,2.3522]
+},
+"Barcelona":{
+"Sagrada Família":[41.4036,2.1744],"Barrio Gótico":[41.3839,2.1760],"El Born":[41.3867,2.1830],"Park Güell":[41.4145,2.1527],"Barceloneta":[41.3809,2.1892],"Atardecer frente al mar":[41.3780,2.1920]
+}};
+function distanceKm(a,b){
+if(!a||!b)return null;
+let R=6371,lat1=a[0]*Math.PI/180,lat2=b[0]*Math.PI/180,dLat=(b[0]-a[0])*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180;
+let h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+return 2*R*Math.asin(Math.sqrt(h));
+}
+function routeOrder(items,destination){
+let points=geo[destination]||{};
+let withGeo=items.filter(x=>points[x[0]]);
+if(withGeo.length<2)return items;
+let remaining=withGeo.slice(),ordered=[];
+ordered.push(remaining.shift());
+while(remaining.length){
+let last=points[ordered[ordered.length-1][0]];
+let bestIndex=0,best=Infinity;
+remaining.forEach((x,i)=>{let d=distanceKm(last,points[x[0]]);if(d<best){best=d;bestIndex=i;}});
+ordered.push(remaining.splice(bestIndex,1)[0]);
+}
+let noGeo=items.filter(x=>!points[x[0]]);
+return ordered.concat(noGeo);
+}
+function walkMinutes(from,to,destination){
+if(!from||!to)return 0;
+let points=geo[destination]||{};
+let km=distanceKm(points[from],points[to]);
+if(km===null)return 0;
+let factor=destination==="Positano"?18:12;
+return Math.max(3,Math.round(km*factor));
+}
+
 
 let dateBase=new Date((state.date||"2026-10-01")+"T12:00:00");
 if(Number.isNaN(dateBase.getTime()))dateBase=new Date("2026-10-01T12:00:00");
@@ -172,11 +215,8 @@ if(state.style==="Sitios locales")candidates.sort((a,b)=>(b.x[2]==="Sitios local
 let preferredCount=state.style==="Mucho tiempo libre"?3:Math.min(7,candidates.length);
 let selected=candidates.slice(0,preferredCount).map(a=>a.x);
 
-// For Positano, once the preferences choose the relevant places, restore the real geographic sequence.
-if(state.destination==="Positano"){
-const order=["Piazza dei Mulini","Via dei Mulini","Chiesa di Santa Maria Assunta","MAR Positano · Museo Archeologico Romano","Spiaggia Grande","Via Positanesi d'America + Torre Trasita","Spiaggia di Fornillo","Paseo en barco desde Spiaggia Grande","Cena junto a Spiaggia Grande"];
-selected.sort((a,b)=>order.indexOf(a[0])-order.indexOf(b[0]));
-}
+// Convertimos la selección en una secuencia geográfica cuando el destino tiene coordenadas.
+selected=routeOrder(selected,state.destination);
 
 let start=toMin(state.start||"09:00"), finish=toMin(state.end||"22:00");
 if(finish<=start)finish+=1440;
@@ -189,52 +229,42 @@ let key=dateKey(current);
 let found=stays.find(s=>s.hotel&&s.from&&key>=s.from&&(!s.to||key<=s.to));
 return found||stays[Math.min(d,stays.length-1)]||stays[0];
 };
+let chunks=Array.from({length:n},()=>[]);
+selected.forEach((item,i)=>chunks[i%n].push(item));
 for(let d=0;d<n;d++){
 let dayDate=new Date(dateBase);dayDate.setDate(dateBase.getDate()+d);
 let activeStay=stayForDay(d);
 let dayItems=[];
 let cursor=start;
 let used=0;
+let previous=null;
 
-// Choose items that fit the day, avoiding duplicates where possible.
-for(let item of selected){
-let travel=item[6]===null?10:(item[6]||0);
-if(state.avoid.includes("Muchas caminatas"))travel=Math.min(travel,7);
+// Cada día recibe sus propias paradas y se ordenan de nuevo geográficamente.
+let daySelected=routeOrder(chunks[d],state.destination);
+for(let item of daySelected){
+let travel=previous?walkMinutes(previous[0],item[0],state.destination):0;
+if(state.avoid.includes("Muchas caminatas"))travel=Math.min(travel||7,7);
 let proposed=cursor+travel;
 let earliest=toMin(item[5][0]), latest=toMin(item[5][1]);
 let target=Math.max(proposed,earliest);
+if(state.avoid.includes("Madrugar")&&target<start+45)target=start+45;
+if(state.avoid.includes("Turismo masificado")&&target<start+60)target=start+60;
 if(target+item[4]>finish)continue;
 if(!openAt(item,target))continue;
-dayItems.push({item,start:target,travel,from:dayItems.length?dayItems[dayItems.length-1].item[0]:"Inicio de ruta"});
+dayItems.push({item,start:target,travel,from:previous?previous[0]:"Alojamiento"});
 cursor=target+item[4];
 used=cursor-start;
-if(cursor>=finish-30)break;
+previous=item;
+if(cursor>=finish-20)break;
 }
-// If no item fits, keep at least one compatible place.
-if(!dayItems.length&&selected.length){
-let item=selected[0],target=Math.max(start,toMin(item[5][0]));
-if(target+item[4]<=finish)dayItems=[{item,start:target,travel:0,from:"Inicio de ruta"}];
+if(!dayItems.length&&daySelected.length){
+let item=daySelected[0],target=Math.max(start,toMin(item[5][0]));
+if(target+item[4]<=finish)dayItems=[{item,start:target,travel:0,from:"Alojamiento"}];
 }
-days.push({date:dayDate,items:dayItems,used});
+days.push({date:dayDate,items:dayItems,used,hotel:activeStay});
 }
 
-let routeHtml=days.map((day,di)=>{
-let totalWalk=day.items.reduce((sum,x)=>sum+(x.travel||0),0);
-let totalVisit=day.items.reduce((sum,x)=>sum+x.item[4],0);
-let blocks=day.items.map((x,j)=>{
-let item=x.item;
-let note="";
-if(state.interests.includes(item[1]))note+="Elegido por tu interés en "+item[1].toLowerCase()+". ";
-if(state.style===item[2]||state.style==="Mezcla"&&item[2]==="Mezcla")note+="Encaja con tu forma de descubrir el destino. ";
-if(state.avoid.includes("Muchas caminatas"))note+="Se ha limitado el desplazamiento a pie. ";
-if(state.avoid.includes("Turismo masificado"))note+="Se priorizan horarios menos centrales cuando el horario del lugar lo permite. ";
-return '<div class="slot"><div class="slottime">'+fmt(x.start)+'</div><div><h4>'+esc(item[0])+'</h4><p><b>'+item[4]+' min</b> de visita'+(x.travel?' · ↓ '+x.travel+' min andando':'')+(x.from&&x.from!=="Inicio de ruta"?' desde '+esc(x.from):'')+'</p><p style="margin-top:5px">'+esc(item[7])+'</p>'+(note?'<p style="margin-top:5px;color:#355044">'+esc(note)+'</p>':'')+(item[0].startsWith("MAR Positano")?'<p style="margin-top:5px;font-size:12px;color:#68736d">Horario usado en el plan: 09:00–20:00 de abril a octubre; 10:00–16:00 del 1 de noviembre al 10 de abril.</p>':'')+'</div></div>';
-}).join("");
-return '<article class="day"><div class="daytop"><h3>Día '+(di+1)+' · '+esc(dayName(day.date))+'</h3><button class="save" onclick="saveDay('+(di+1)+')">♡ Guardar</button></div><div class="route-summary"><span class="route-chip">🏨 '+esc((stayForDay(di)||{}).hotel||"Alojamiento no indicado")+'</span><span class="route-chip">'+day.items.length+' paradas</span><span class="route-chip">'+totalVisit+' min de visita</span><span class="route-chip">≈ '+totalWalk+' min andando</span></div><div class="routeflow"><div class="route-chip" style="display:inline-block;margin-top:12px">Salida desde alojamiento · '+esc((stayForDay(di)||{}).hotel||"indicado por ti")+"</div>"+blocks+'<div class="route-chip" style="display:inline-block;margin-top:8px">Regreso hacia alojamiento</div></div></article>';
-}).join("");
-
-let explanation='Hemos usado tus respuestas para construir una secuencia, no solo una lista: fecha, hora de inicio, hora final, ritmo, intereses, evitaciones y estilo.';
-document.getElementById("route").innerHTML='<div class="panel"><h2>Tu ruta personalizada</h2><div class="notice"><b>Así funciona esta ruta:</b> '+esc(explanation)+'<br><span style="font-size:13px">Los tiempos andando de Positano son aproximados y están basados en la secuencia del centro; las distancias exactas y el transporte se incorporarán después.</span></div><div class="itinerary" style="margin-top:15px">'+routeHtml+'</div></div>';
+document.getElementById("route").innerHTML='<div class="panel"><h2>Tu ruta personalizada</h2><div class="notice"><b>Así funciona esta ruta:</b> '+esc(explanation)+'<br><span style="font-size:13px">Cuando el destino tiene coordenadas, la ruta ordena las paradas por proximidad y calcula un tiempo andando aproximado entre ellas. El alojamiento todavía necesita una dirección/coordenadas para convertirse en el punto geográfico exacto de salida y regreso.</span></div><div class="itinerary" style="margin-top:15px">'+routeHtml+'</div></div>';
 document.getElementById("route").scrollIntoView({behavior:"smooth"});
 }
 function saveDay(i){let a=JSON.parse(localStorage.getItem("vacaySaved")||"[]");let k=state.destination+"-"+i;if(!a.some(x=>x.key===k))a.push({key:k,destination:state.destination,day:i});localStorage.setItem("vacaySaved",JSON.stringify(a));updateCount();alert("Día guardado en Mi viaje ✦")}
