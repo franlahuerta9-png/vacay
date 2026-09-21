@@ -231,40 +231,31 @@ return found||stays[Math.min(d,stays.length-1)]||stays[0];
 };
 let chunks=Array.from({length:n},()=>[]);
 let remaining=selected.slice();
-let dayCapacity=Math.max(1,finish-start);
+for(let d=0;d<n;d++){
+  let daysLeft=n-d;
+  let take=Math.ceil(remaining.length/daysLeft);
+  if(d===n-1)take=remaining.length;
+  chunks[d]=routeOrder(remaining.splice(0,take),state.destination);
+}
 
-// First assign items once, in geographic order, balancing total duration while
-// reserving a realistic amount of time per day.
 let scheduledNames=new Set();
 for(let d=0;d<n;d++){
-let dayDate=new Date(dateBase);dayDate.setDate(dateBase.getDate()+d);
-let activeStay=stayForDay(d);
-let dayItems=[];
-let cursor=start;
-let used=0;
-let previous=null;
-let daySelected=routeOrder(chunks[d],state.destination);
-
-for(let item of daySelected){
-  if(scheduledNames.has(item[0]))continue;
-  let travel=previous?walkMinutes(previous[0],item[0],state.destination):0;
-  if(state.avoid.includes("Muchas caminatas"))travel=Math.min(travel,7);
-  let proposed=cursor+travel;
-  let earliest=toMin(item[5][0]), latest=toMin(item[5][1]);
-  let target=Math.max(proposed,earliest);
-  if(state.avoid.includes("Madrugar")&&target<start+45)target=start+45;
-  if(state.avoid.includes("Turismo masificado")&&target<start+60)target=start+60;
-  if(target+item[4]>finish)continue;
-  if(!openAt(item,target))continue;
-  dayItems.push({item,start:target,travel,from:previous?previous[0]:"Alojamiento"});
-  scheduledNames.add(item[0]);
-  cursor=target+item[4];
-  used=cursor-start;
-  previous=item;
+  let dayDate=new Date(dateBase);dayDate.setDate(dateBase.getDate()+d);
+  let activeStay=stayForDay(d);
+  let dayItems=[];let cursor=start;let used=0;let previous=null;
+  for(let item of chunks[d]){
+    if(scheduledNames.has(item[0]))continue;
+    let travel=previous?walkMinutes(previous[0],item[0],state.destination):0;
+    if(state.avoid.includes("Muchas caminatas"))travel=Math.min(travel,7);
+    let target=Math.max(cursor+travel,toMin(item[5][0]));
+    if(state.avoid.includes("Madrugar")&&target<start+45)target=start+45;
+    if(state.avoid.includes("Turismo masificado")&&target<start+60)target=start+60;
+    if(target+item[4]>finish||!openAt(item,target))continue;
+    dayItems.push({item,start:target,travel,from:previous?previous[0]:"Alojamiento"});
+    scheduledNames.add(item[0]);cursor=target+item[4];used=cursor-start;previous=item;
+  }
+  days.push({date:dayDate,items:dayItems,used,hotel:activeStay});
 }
-days.push({date:dayDate,items:dayItems,used,hotel:activeStay});
-}
-
 let routeHtml=days.map((day,di)=>{
 let totalWalk=day.items.reduce((sum,x)=>sum+(x.travel||0),0);
 let totalVisit=day.items.reduce((sum,x)=>sum+x.item[4],0);
