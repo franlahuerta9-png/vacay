@@ -221,6 +221,15 @@ candidates=candidates.map((x,i)=>({x,i,s:score(x)})).sort((a,b)=>b.s-a.s||a.i-b.
 if(state.style==="Imprescindibles")candidates.sort((a,b)=>(b.x[2]==="Imprescindibles")-(a.x[2]==="Imprescindibles")||b.s-a.s);
 if(state.style==="Sitios locales")candidates.sort((a,b)=>(b.x[2]==="Sitios locales")-(a.x[2]==="Sitios locales")||b.s-a.s);
 
+// Regla fundamental: el primer bloque de cada día respeta la hora elegida.
+function firstActivityFit(item,dayStart,dayFinish){
+  let earliest=toMin(item[5][0]), target=Math.max(dayStart,earliest);
+  if(state.avoid.includes("Madrugar")&&target<dayStart+45)target=dayStart+45;
+  if(state.avoid.includes("Turismo masificado")&&target<dayStart+60)target=dayStart+60;
+  target=pushPastReservations(dateKey(dayDate),target,item[4]);
+  return target+item[4]<=dayFinish&&openAt(item,target)?target:null;
+}
+
 // No fijamos un número de actividades por día ni para todo el viaje.
 // La selección depende de las preferencias; después el horario disponible decide cuántas caben.
 let selected=candidates.map(a=>a.x);
@@ -281,7 +290,9 @@ for(let d=0;d<n;d++){
       let distanceScore=previous?walkMinutes(previous[0],item[0],state.destination):0;
       let preferenceScore=score(item);
       let balancePenalty=Math.max(0,dayLoad+item[4]-targetDaily);
-      options.push({i,item,target,travel,rank:preferenceScore*10-distanceScore-balancePenalty*2});
+      let morningFit=previous?0:(target<=start+30?10000:0);
+      let earlyPenalty=previous?0:Math.max(0,target-start)*20;
+      options.push({i,item,target,travel,rank:morningFit+preferenceScore*10-distanceScore-balancePenalty*2-earlyPenalty});
     }
 
     if(!options.length)break;
@@ -326,6 +337,8 @@ for(let item of remaining.slice()){
 let routeHtml=days.map((day,di)=>{
 let totalWalk=day.items.reduce((sum,x)=>sum+(x.travel||0),0);
 let totalVisit=day.items.reduce((sum,x)=>sum+x.item[4],0);
+let firstStart=day.items.length?day.items[0].start:start;
+let openingFree=firstStart>start?'<div class="notice" style="margin-top:12px"><b>Inicio del día:</b> desde las '+fmt(start)+' hasta las '+fmt(firstStart)+' tienes tiempo libre para desayunar, prepararte o desplazarte desde el alojamiento.</div>':'';
 let blocks=day.items.map((x,j)=>{
 let item=x.item;
 let note="";
@@ -337,7 +350,7 @@ return '<div class="slot"><div class="slottime">'+fmt(x.start)+'</div><div><h4>'
 }).join("");
 let free=Math.max(0,finish-(day.items.length?day.items[day.items.length-1].start+day.items[day.items.length-1].item[4]:start));
 let freeText=free>=60?'<div class="notice" style="margin-top:12px"><b>Tiempo libre:</b> '+Math.floor(free/60)+' h'+(free%60?' '+(free%60)+' min':'')+' para descansar, playa, compras o improvisar.</div>':'';
-return '<article class="day"><div class="daytop"><h3>Día '+(di+1)+' · '+esc(dayName(day.date))+'</h3><button class="save" onclick="saveDay('+(di+1)+')">♡ Guardar</button></div><div class="route-summary"><span class="route-chip">🏨 '+esc((day.hotel||{}).hotel||"Alojamiento no indicado")+'</span><span class="route-chip">'+day.items.length+' paradas</span><span class="route-chip">'+totalVisit+' min de visita</span><span class="route-chip">≈ '+totalWalk+' min andando</span></div><div class="routeflow"><div class="route-chip" style="display:inline-block;margin-top:12px">Salida desde alojamiento · '+esc((day.hotel||{}).hotel||"indicado por ti")+'</div>'+blocks+'<div class="route-chip" style="display:inline-block;margin-top:8px">Regreso hacia alojamiento</div></div></article>';
+return '<article class="day"><div class="daytop"><h3>Día '+(di+1)+' · '+esc(dayName(day.date))+'</h3><button class="save" onclick="saveDay('+(di+1)+')">♡ Guardar</button></div><div class="route-summary"><span class="route-chip">🏨 '+esc((day.hotel||{}).hotel||"Alojamiento no indicado")+'</span><span class="route-chip">'+day.items.length+' paradas</span><span class="route-chip">'+totalVisit+' min de visita</span><span class="route-chip">≈ '+totalWalk+' min andando</span></div><div class="routeflow"><div class="route-chip" style="display:inline-block;margin-top:12px">Salida desde alojamiento · '+fmt(start)+' · '+esc((day.hotel||{}).hotel||"indicado por ti")+'</div>'+openingFree+blocks+'<div class="route-chip" style="display:inline-block;margin-top:8px">Regreso hacia alojamiento</div></div></article>';
 }).join("");
 let explanation='Hemos usado tus respuestas para construir una secuencia geográfica: preferencias, horarios y, cuando hay datos disponibles, proximidad real entre lugares. Cada día se separa en una zona lógica para reducir desplazamientos innecesarios.';
 
