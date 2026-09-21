@@ -246,9 +246,13 @@ let chunks=Array.from({length:n},()=>[]);
 let remaining=selected.slice();
 let scheduledNames=new Set();
 
-// El número de actividades NO se reparte artificialmente.
-// Cada día se rellena solo con lo que realmente cabe entre la hora de inicio y fin.
-// Se elige la siguiente actividad por cercanía geográfica + encaje horario + preferencias.
+// No repartimos por número de actividades.
+// Repartimos por tiempo total de experiencias disponible, intentando que cada día
+// tenga una carga razonable para el horario elegido. El contenido de cada día
+// sigue dependiendo de qué encaja geográficamente y por horario.
+let totalDuration=remaining.reduce((sum,x)=>sum+x[4],0);
+let targetDaily=Math.max(60,Math.ceil(totalDuration/Math.max(1,n)));
+
 for(let d=0;d<n;d++){
   let dayDate=new Date(dateBase);
   dayDate.setDate(dateBase.getDate()+d);
@@ -256,6 +260,7 @@ for(let d=0;d<n;d++){
   let dayItems=[];
   let cursor=start;
   let previous=null;
+  let dayLoad=0;
 
   while(remaining.length){
     let options=[];
@@ -268,44 +273,39 @@ for(let d=0;d<n;d++){
       let target=Math.max(cursor+travel,earliest);
       if(state.avoid.includes("Madrugar")&&target<start+45)target=start+45;
       if(state.avoid.includes("Turismo masificado")&&target<start+60)target=start+60;
+      target=pushPastReservations(dateKey(dayDate),target,item[4]);
 
       if(target+item[4]>finish)continue;
       if(!openAt(item,target))continue;
 
       let distanceScore=previous?walkMinutes(previous[0],item[0],state.destination):0;
       let preferenceScore=score(item);
-      // Primero respetamos que quepa en el día; después priorizamos preferencias y cercanía.
-      options.push({i,item,target,travel,rank:preferenceScore*10-distanceScore});
+      let balancePenalty=Math.max(0,dayLoad+item[4]-targetDaily);
+      options.push({i,item,target,travel,rank:preferenceScore*10-distanceScore-balancePenalty*2});
     }
 
     if(!options.length)break;
 
-    options.sort((a,b)=>b.rank-a.rank);
+    options.sort((x,y)=>y.rank-x.rank);
     let pick=options[0];
 
-    dayItems.push({
-      item:pick.item,
-      start:pick.target,
-      travel:pick.travel,
-      from:previous?previous[0]:"Alojamiento"
-    });
-
+    dayItems.push({item:pick.item,start:pick.target,travel:pick.travel,from:previous?previous[0]:"Alojamiento"});
     scheduledNames.add(pick.item[0]);
     cursor=pick.target+pick.item[4];
     previous=pick.item;
+    dayLoad+=pick.item[4];
     remaining.splice(pick.i,1);
+
+    // No seguimos llenando el día por fuerza. Si ya tiene una carga razonable,
+    // pasamos al siguiente día y dejamos margen para comida/descanso/vida real.
+    if(dayLoad>=targetDaily)break;
   }
 
-  days.push({
-    date:dayDate,
-    items:dayItems,
-    used:cursor-start,
-    hotel:activeStay
-  });
+  days.push({date:dayDate,items:dayItems,used:cursor-start,hotel:activeStay});
 }
 
-// Si quedan actividades porque un día no podía admitirlas por horario,
-// se intenta colocarlas en los días siguientes sin duplicarlas.
+// Segundo intento: cualquier experiencia que todavía no haya encajado se coloca
+// en el primer día posterior donde quepa, sin duplicarla.
 for(let item of remaining.slice()){
   for(let d=0;d<n;d++){
     let day=days[d];
@@ -314,7 +314,7 @@ for(let item of remaining.slice()){
     let travel=previous?walkMinutes(previous[0],item[0],state.destination):0;
     if(state.avoid.includes("Muchas caminatas"))travel=Math.min(travel,7);
     let target=Math.max(cursor+travel,toMin(item[5][0]));
-    target=pushPastReservations(dateKey(dayDate),target,item[4]);
+    target=pushPastReservations(dateKey(day.date),target,item[4]);
     if(target+item[4]<=finish&&openAt(item,target)){
       day.items.push({item,start:target,travel,from:previous?previous[0]:"Alojamiento"});
       scheduledNames.add(item[0]);
@@ -323,7 +323,6 @@ for(let item of remaining.slice()){
     }
   }
 }
-
 let routeHtml=days.map((day,di)=>{
 let totalWalk=day.items.reduce((sum,x)=>sum+(x.travel||0),0);
 let totalVisit=day.items.reduce((sum,x)=>sum+x.item[4],0);
