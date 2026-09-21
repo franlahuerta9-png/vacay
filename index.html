@@ -264,6 +264,11 @@ let targetDaily=Math.max(60,Math.ceil(totalDuration/Math.max(1,n)));
 
 for(let d=0;d<n;d++){
   let dayDate=new Date(dateBase);
+  // Recalculamos el objetivo con lo que queda y con los días que faltan.
+  // Así no permitimos que los primeros días se coman prácticamente todo el viaje.
+  let remainingDays=Math.max(1,n-d);
+  let remainingDuration=remaining.reduce((sum,x)=>sum+x[4],0);
+  let dailyTarget=Math.max(60,Math.ceil(remainingDuration/remainingDays));
   dayDate.setDate(dateBase.getDate()+d);
   let activeStay=stayForDay(d);
   let dayItems=[];
@@ -289,13 +294,34 @@ for(let d=0;d<n;d++){
 
       let distanceScore=previous?walkMinutes(previous[0],item[0],state.destination):0;
       let preferenceScore=score(item);
-      let balancePenalty=Math.max(0,dayLoad+item[4]-targetDaily);
+      // Mientras haya otra opción que encaje, evitamos superar la carga
+      // razonable de este día. No es un número fijo de actividades: es tiempo.
+      let exceedsTarget=dayLoad>0&&dayLoad+item[4]>dailyTarget;
+      if(exceedsTarget)continue;
+      let balancePenalty=Math.max(0,dayLoad+item[4]-dailyTarget);
       let morningFit=previous?0:(target<=start+30?10000:0);
       let earlyPenalty=previous?0:Math.max(0,target-start)*20;
       options.push({i,item,target,travel,rank:morningFit+preferenceScore*10-distanceScore-balancePenalty*2-earlyPenalty});
     }
 
-    if(!options.length)break;
+    if(!options.length){
+      // Si ninguna actividad cabe sin superar el objetivo, permitimos una sola
+      // actividad que encaje para no dejar el día vacío. El resto queda para
+      // los días siguientes.
+      let fallback=[];
+      for(let i=0;i<remaining.length;i++){
+        let item=remaining[i],travel=previous?walkMinutes(previous[0],item[0],state.destination):0;
+        if(state.avoid.includes("Muchas caminatas"))travel=Math.min(travel,7);
+        let earliest=toMin(item[5][0]),target=Math.max(cursor+travel,earliest);
+        if(!previous&&state.avoid.includes("Madrugar")&&target<start+45)target=start+45;
+        if(!previous&&state.avoid.includes("Turismo masificado")&&target<start+60)target=start+60;
+        target=pushPastReservations(dateKey(dayDate),target,item[4]);
+        if(target+item[4]<=finish&&openAt(item,target))fallback.push({i,item,target,travel,rank:score(item)*10-(previous?walkMinutes(previous[0],item[0],state.destination):0)});
+      }
+      if(!fallback.length)break;
+      fallback.sort((a,b)=>b.rank-a.rank);
+      options=[fallback[0]];
+    }
 
     options.sort((x,y)=>y.rank-x.rank);
     let pick=options[0];
